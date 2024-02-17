@@ -1,0 +1,44 @@
+<head>
+    <!-- Include Handsfree.js -->
+    <link rel="stylesheet" href="handsfree.css" />
+    <script src="handsfree.js"></script>
+  </head>
+   
+  <body width="1280" height="720">
+    <canvas style="display: block;position: absolute;left:0;top:0;z-index:1" id="rect" width="1280" height="720"></canvas>
+    <!-- Instantiate and start it -->
+    <script>
+      var ctx = document.querySelector("#rect").getContext("2d");
+      var rect = { color: 'green', left: 1000, top : 100, width: 200, height: 200 }
+
+      var handsfree = new Handsfree({hands: true, showDebug: true})
+
+      ctx.font = "bold 58px serif"
+      ctx.fillStyle = "green"
+      // handsfree.enablePlugins('browser')
+      handsfree.use('mainloop', {
+        onFrame (data) {
+          ctx.clearRect(0, 0, 1280, 720)
+          if (data.hands.landmarksVisible[0]) {
+            // left hand or right hand is pinching.
+            pinch = handsfree.data.hands.pinchState[1][0] || handsfree.data.hands.pinchState[0][0]
+            finger1 = { x : 1280 - data.hands.landmarks[0][8].x * 1280 , y : data.hands.landmarks[0][8].y * 720}
+
+            if (finger1.x > rect.left && finger1.x < (rect.left + rect.width) && finger1.y > rect.top && finger1.y < rect.top + rect.height) {
+              rect.color = 'red'
+            } else {
+              rect.color = 'green'
+            }
+            ctx.fillstyle = 'red'
+            if (data.hands.landmarks) {
+              ctx.fillRect(finger1.x, finger1.y, 10, 10)
+            }
+          }
+
+          ctx.fillStyle = rect.color
+          ctx.fillRect(rect.left, rect.top, rect.width, rect.height)
+        }
+      })
+      handsfree.start()
+    </script>
+  </body>
